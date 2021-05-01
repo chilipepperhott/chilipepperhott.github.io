@@ -5,7 +5,6 @@ description: >
   I am Elijah. I am a passionate teenage developer. I adore writing Rust code. I also have experience with C# and Unity.
   I currently work as a Fiverr Freelancer writing Discord Bots.
 show_excerpts: true # set to true to show excerpts on the homepage
-baseurl: /texture
 
 # Minima date format
 # refer to http://shopify.github.io/liquid/filters/date/ if you want to customize this
