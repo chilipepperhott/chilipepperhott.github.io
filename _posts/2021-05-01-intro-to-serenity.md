@@ -57,7 +57,7 @@ The Serenity Standard Framework splits your bot's commands into groups. Each gro
 
 First, add the needed structs and macros to the file:
 ```rust
-use serenity::framework::standard::macros::{group, command};
+use serenity::{Client, client::Context, framework::{StandardFramework, standard::{CommandResult, macros::{group, command}}}, model::channel::Message};
 ```
 
 Next, create a struct that we will attach our commands to:
@@ -113,6 +113,37 @@ We want the bot to reply to the `!ping` command with "Pong!", so let's add that 
 msg.reply(ctx, "Pong!").await?;
 
 Ok(())
+```
+
+### Full code
+Here is the full code for the bot:
+```rust
+use serenity::{Client, client::Context, framework::{StandardFramework, standard::{CommandResult, macros::{group, command}}}, model::channel::Message};
+
+#[tokio::main]
+async fn main() {
+    let token = "Your bot token";
+
+    let framework = StandardFramework::new()
+    .configure(|c|{
+        c.prefix("!")
+    })
+    .group(&HELLOWORLD_GROUP);
+
+    let mut client = Client::builder(token).framework(framework).await.expect("Could not start Discord");
+    client.start().await.expect("The bot stopped");
+}
+
+#[group]
+#[commands(ping)]
+struct HelloWorld;
+
+#[command]
+async fn ping(ctx: &Context, msg: &Message) -> CommandResult{
+    msg.reply(ctx, "Pong!").await?;
+
+    Ok(())
+}
 ```
 
 ### That's it!
