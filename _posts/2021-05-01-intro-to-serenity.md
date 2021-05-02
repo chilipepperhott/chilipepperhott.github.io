@@ -1,7 +1,7 @@
 ---
 layout: post
 title: Intro to Writing Discord Bots in Rust
-description: How create your first Discord bot using the most loved language
+description: How create your first Discord bot using the most loved programming language
 date: 2021-05-01 16:00:23 +0600
 categories: Rust Discord
 ---
@@ -9,4 +9,114 @@ Discord is a instant message platform with more than 150 million monthly active 
 
 ## Interaction
 Most interaction with Discord bots happens via commands, not dissimilar to terminal applications. Commands may look like `!play Eat it by Weird Al`.\
+The bot we are going to make now will simply respond to `!ping` with "Pong!".
 ![Example of command](/assets/images/pong.png)
+
+## Template
+This tutorial is going to teach you how to set up a bot from scratch, but the easiest way to get started is by using my [cargo generator template](https://github.com/chilipepperhott/discord-bot-template)
+
+## Setup the project
+Using a functioning Rust environment, use cargo to create a new project. E.g:
+```
+cargo new tutorial-bot
+```
+
+Next, we have to add [Serenity](https://github.com/serenity-rs/serenity), __the__ library for creating Discord bots in Rust. We also have to drop in [Tokio](https://tokio.rs/), because Serenity takes advantage of it's async runtime.\
+You can do this either via `cargo-edit`:
+```
+cargo add serenity
+cargo add tokio --features full
+```
+or by just adding them to `Cargo.toml`:
+```
+[dependencies]
+serenity = "0.10.5"
+tokio = { version = "1.5.0", features = ["full"] }
+```
+Please make sure you are using the latest version of the library.
+
+## Setting up the Standard Framework
+Serenity has a lot of flexibility. You have access to a event handler that allows fine grain control of events. You also have access to a standard framework that makes it ridiculously easy to respond to commands. 
+
+Before we do anything else, we have to make our `main` function async. It is super easy to do that, just replace it with:
+```rust
+#[tokio::main]
+async fn main() {
+
+}
+```
+
+First, we want to get our bot token in. In an actual bot, please obtain it via an environment variable or some other method. We are __only__ doing it this way for simplicity.\
+Add
+```rust
+let token = "{your bot token}";
+```
+If you do not know how to get a bot token, please follow [this tutorial](https://www.getdroidtips.com/discord-bot-token/).
+
+The Serenity Standard Framework splits your bot's commands into groups. Each group can have multiple commands. For example, a bot might have two groups: one focused on fun and one focused on math. The former has commands like `!meme`, while the latter may have various math functions, like `sin!`. This is also how we will add commands to our bot.
+
+First, add the needed structs and macros to the file:
+```rust
+use serenity::framework::standard::macros::{group, command};
+```
+
+Next, create a struct that we will attach our commands to:
+```rust
+#[group]
+#[commands()]
+struct HelloWorld;
+```
+
+Once we have added our commands, we will enter them into the commands sub-macro.
+
+Create an instance of `StandardFramework` and add our group to it. We can also configure our command prefix now.
+```rust
+let framework = StandardFramework::new()
+    .configure(|c|{
+        c.prefix("!")
+    })
+    .group(&HELLOWORLD_GROUP);
+```
+Notice that we used a reference to a static struct called `HELLOWORLD_GROUP` instead of just adding our group. This is the output of the `#[group]` macro. 
+
+Now that we have created our framework, we have to attach it to a Discord client. 
+```rust
+let mut client = Client::builder(token).framework(framework).await.expect("Could not start Discord");
+```
+Start it.
+```rust
+client.start().await.expect("The bot stopped");
+```
+
+## Adding the command
+Now that we have the framework set up, let's add a command.
+
+```rust
+#[command]
+async fn ping(ctx: &Context, msg: &Message) -> CommandResult{
+
+}
+```
+
+This command only needs the Discord client's Context, the message that contains the command, and returns a CommandResult.\
+Do not forget to add the command to the group:
+```rust
+#[group]
+#[commands(ping)]
+struct HelloWorld;
+```
+If you don't, it will simply not get run.
+
+We want the bot to reply to the `!ping` command with "Pong!", so let's add that to the inside of the `ping` function:
+
+```rust
+msg.reply(ctx, "Pong!").await?;
+
+Ok(())
+```
+
+### That's it!
+
+If you build and run your app, you should have a functioning Discord bot!
+
+Serenity is an amazing crate and is an absolute joy to work with. I hope you learned something. There is a __ton__ more stuff that I did not cover here. Feel free to look at the [Serenity docs](https://docs.rs/serenity/) and examples to learn more!
